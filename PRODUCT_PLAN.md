@@ -1,0 +1,109 @@
+# Teacher Evaluation Generator — Product Blueprint
+
+## Goal
+Build an app that helps instructional leaders produce high-quality, standards-aligned teacher evaluations from classroom observation notes and district forms.
+
+## Core Workflow
+1. **Upload district forms**
+   - Accept DOCX/PDF templates and rubric descriptors.
+   - Parse fields, rating scales, and domain language.
+2. **Upload/enter observation notes**
+   - Free-text notes, timestamped notes, or copied walkthrough notes.
+3. **AI lesson summary**
+   - Generate concise lesson narrative (objective, instruction, student engagement, assessment evidence).
+4. **Evidence extraction + rubric mapping**
+   - Suggest evidence statements tied to each domain/indicator.
+   - Recommend a rating with confidence and rationale.
+5. **Editable form experience**
+   - Render district form with prefilled text.
+   - Use dropdowns for ratings and quick-select feedback stems.
+6. **Finalize + export**
+   - Export to DOCX/PDF and keep an auditable revision history.
+
+## MVP Features
+- District form upload + field mapping UI.
+- Observation notes input (text + file upload).
+- AI-generated:
+  - lesson summary,
+  - strengths,
+  - growth areas,
+  - suggested next steps.
+- Dropdown rating controls per rubric domain.
+- One-click “Insert into form” for each section.
+- Export completed evaluation.
+
+## Recommended Tech Stack
+- **Frontend:** React + TypeScript + component library (MUI or shadcn/ui).
+- **Backend:** Python FastAPI (or Node/Express) with REST API.
+- **AI Layer:** LLM prompt pipelines for
+  - summarization,
+  - evidence extraction,
+  - rubric-aligned feedback generation.
+- **Storage:** Postgres (metadata + evaluations), object storage for uploaded forms/notes.
+- **Document handling:**
+  - python-docx for DOCX templates,
+  - PDF parser + field mapping for PDFs.
+
+## Data Model (high-level)
+- `districts` (name, settings)
+- `rubrics` (district_id, domain_name, indicator_text, rating_scale)
+- `forms` (district_id, template_file, field_map)
+- `observations` (teacher, evaluator, date, notes)
+- `evaluation_drafts` (observation_id, generated_sections, ratings, edits)
+- `evaluation_exports` (draft_id, exported_file, created_at)
+
+## AI Prompting Strategy
+- Use structured output (JSON schema) for reliability:
+  - `lesson_summary`
+  - `evidence_by_domain[]`
+  - `suggested_rating`
+  - `confidence`
+  - `recommended_feedback`
+- Always include rubric text and selected district language in the prompt context.
+- Force citation to evidence snippets from notes to reduce hallucinations.
+
+## UX Recommendations for Dropdowns and Fast Filling
+- Domain cards (Planning, Instruction, Environment, Assessment, Professionalism).
+- Each card includes:
+  - AI suggestion,
+  - rating dropdown,
+  - rationale text area,
+  - “insert evidence” chips.
+- “Tone selector” for feedback style (coaching, direct, celebratory).
+- “Regenerate this section” button without changing other completed sections.
+
+## Guardrails and Compliance
+- FERPA-aware design:
+  - encrypt files at rest and in transit,
+  - role-based access,
+  - audit logs.
+- Human-in-the-loop:
+  - evaluator must approve all generated content before export.
+- Bias guardrails:
+  - include checks for unsupported claims,
+  - require evidence linkage for ratings.
+
+## Suggested Build Phases
+### Phase 1 (2–4 weeks)
+- Form upload and manual mapping.
+- Notes input and lesson summary generation.
+- Editable evaluation draft UI + dropdown ratings.
+
+### Phase 2 (3–5 weeks)
+- Rubric auto-mapping and confidence scoring.
+- Export to district template.
+- Saved drafts and revision history.
+
+### Phase 3 (3–6 weeks)
+- Multi-school support, analytics dashboards, calibration mode.
+- Integrations (Google/Microsoft login, SIS/HR exports).
+
+## Example End-to-End User Story
+1. Assistant principal uploads district rubric and evaluation form once.
+2. After classroom walkthrough, AP pastes observation notes.
+3. App generates summary, evidence by domain, and proposed ratings.
+4. AP adjusts dropdown ratings and edits feedback text.
+5. AP exports final evaluation PDF and shares with teacher.
+
+## Next Implementation Step
+Start by building the **form field mapper + observation notes to structured JSON** pipeline first. That unlocks reliable generation and easy dropdown-based form completion.
